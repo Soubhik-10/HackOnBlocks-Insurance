@@ -39,6 +39,27 @@ const initialPolicies: Policy[] = [
     duration: "1 Year",
     coverage: "Full Coverage",
   },
+  {
+    id: 5,
+    name: "Health Insdurance",
+    type: "Health",
+    duration: "1 Year",
+    coverage: "Full Coverage",
+  },
+  {
+    id: 6,
+    name: "Health Insurancfde",
+    type: "Health",
+    duration: "1 Year",
+    coverage: "Full Coverage",
+  },
+  {
+    id: 7,
+    name: "Health Insurfgance",
+    type: "Health",
+    duration: "1 Year",
+    coverage: "Full Coverage",
+  },
 ]
 
 const policyTypeIcon = (type: Policy["type"]) => {
@@ -62,6 +83,7 @@ interface InsuranceListProps {
 
 const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
   const [policies] = useState<Policy[]>(initialPolicies)
+  console.log(policies)
   const [search, setSearch] = useState<string>("")
   const [filter, setFilter] = useState<string>(category || "")
 
@@ -87,12 +109,12 @@ const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
             placeholder="Search by name"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="p-2 border outline-none border-green-500 rounded flex-1 focus:border-teal-600 focus:border-4"
+            className="p-2 border outline-none border-green-500 rounded-xl flex-1 focus:border-teal-600 focus:border-4"
           />
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="p-2 border border-green-500 rounded"
+            className="p-2 border border-green-500 rounded-xl outline-none focus:border-teal-600 focus:border-4"
           >
             <option value="">All Types</option>
             <option value="Car">Car</option>
@@ -102,7 +124,7 @@ const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
           </select>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 overflow-y-auto h-96 custom-scrollbar">
+        <div className="grid grid-cols-1 gap-4 overflow-scroll max-h-[450px]">
           {filteredPolicies.map((policy) => (
             <div
               key={policy.id}
