@@ -28,6 +28,12 @@ const Header: React.FC = () => {
               Home
             </Link>
             <Link
+              to="/Register"
+              className="text-lg font-semibold hover:bg-teal-300 hover:text-black rounded-full p-2"
+            >
+              Register
+            </Link>
+            <Link
               to="/Dashboard"
               className="text-lg font-semibold hover:bg-teal-300 hover:text-black rounded-full p-2"
             >
