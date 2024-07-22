@@ -1,18 +1,15 @@
 // Header.tsx
 import React from "react"
 import { Link } from "react-router-dom"
-import { createThirdwebClient } from "thirdweb"
-import { ConnectButton } from "thirdweb/react"
-import { createWallet, walletConnect } from "thirdweb/wallets"
-const wallets = [
-  createWallet("io.metamask"),
-  createWallet("com.coinbase.wallet"),
-  walletConnect(),
-]
-const client = createThirdwebClient({
-  clientId: "YOUR_CLIENT_ID",
-})
+import { ConnectButton, useActiveAccount } from "thirdweb/react"
+import { useInsuranceContext } from "../contexts/context"
+
 const Header: React.FC = () => {
+  const { wallets, client } = useInsuranceContext()
+  const address = useActiveAccount()?.address
+
+  // console.log(address)
+
   return (
     <div className="p-2 flex justify-between items-center br-1 sticky top-4 z-10 h-14 mt-2">
       <div className="flex items-center">

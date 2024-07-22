@@ -1,7 +1,13 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { FaCar, FaHome, FaBriefcase, FaHeartbeat } from "react-icons/fa"
 import Header from "../components/Header"
-
+import { useNavigate } from "react-router-dom"
+import { readContract } from "thirdweb"
+import { useInsuranceContext } from "../contexts/context"
+import { useActiveAccount, useSendTransaction } from "thirdweb/react"
+import { createWallet } from "thirdweb/wallets"
+import { prepareContractCall, sendTransaction } from "thirdweb"
+import { ethers } from "ethers"
 interface InsuranceScheme {
   pid: number
   creator: string
@@ -56,14 +62,58 @@ const policyTypeIcon = (type: string) => {
 }
 
 const PolicyPage: React.FC<PolicyPageProps> = ({ pid }) => {
+  const address = useActiveAccount()?.address
+  const [ethAmount, setEthAmount] = useState<string>("")
+  const navigate = useNavigate()
+  const [registered, setRegistered] = useState(false)
+  const { contract, client } = useInsuranceContext()
+  const getRegisterInfo = async () => {
+    if (address) {
+      const data = await readContract({
+        contract,
+        method: "function isACustomer(address) view returns (bool)",
+        params: [address],
+      })
+      console.log(data)
+      setRegistered(data)
+    }
+  }
+
+  useEffect(() => {
+    getRegisterInfo()
+    return () => {}
+  }, [])
+  const handleNotRegistered = () => {
+    navigate("/register")
+  }
+  const handleBuyPolicy = async () => {
+    const wallet = createWallet("io.metamask")
+    if (!registered) handleNotRegistered()
+    else {
+      const account = await wallet.connect({
+        // pass the client you created with `createThirdwebClient()`
+        client,
+      })
+      const transaction = await prepareContractCall({
+        contract,
+        method: "function depositInitialAmount(uint256 _pid) payable",
+        params: [BigInt(pid)],
+        value: ethers.parseEther(ethAmount || "0"),
+      })
+      const { transactionHash } = await sendTransaction({
+        transaction,
+        account,
+      })
+    }
+  }
+
   // Replace with actual data fetching logic
   const policy = dummyPolicy // In a real scenario, fetch based on pid
 
   return (
-    <div className="h-screen w-full bg-po items-center">
-      <Header />
-      <div className="flex justify-center items-center mt-20">
-        <div className="max-w-7xl w-full p-8 blue-glassmorphism shadow-lg rounded-lg min-h-[500px] text-white">
+    <div className="w-full bg-po items-center">
+      <div className="flex justify-center items-center">
+        <div className="max-w-7xl w-full p-8 blue-glassmorphism1 shadow-lg rounded-lg text-white">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-2xl font-bold">{policy.name}</h1>
             {policyTypeIcon(policy.insurance_type)}
@@ -97,12 +147,25 @@ const PolicyPage: React.FC<PolicyPageProps> = ({ pid }) => {
             </div>
           </div>
           <div className="flex justify-between mt-6">
-            <button className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+            <input
+              type="text"
+              placeholder="Enter ETH amount"
+              value={ethAmount}
+              onChange={(e) => setEthAmount(e.target.value)}
+              className="p-2 border text-black outline-none border-green-500 rounded-xl flex-1 focus:border-teal-600 focus:border-4"
+            />
+            <button
+              className="bg-green-500 border-teal-500 border-2 rounded-lg text-white py-2 px-4 hover:bg-green-600"
+              onClick={handleBuyPolicy}
+            >
               Buy Policy
             </button>
-            <button className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+            {/* <button
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+              onClick={handleButtonClick}
+            >
               View Other Policies
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

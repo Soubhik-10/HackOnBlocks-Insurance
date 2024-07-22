@@ -1,6 +1,10 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { FaCar, FaHome, FaBriefcase, FaHeartbeat } from "react-icons/fa"
 import Header from "./Header"
+import { readContract } from "thirdweb"
+import { useInsuranceContext } from "../contexts/context"
+import PolicyPage from "../pages/PolicyPage"
+import Modal from "./modal"
 
 interface Policy {
   id: number
@@ -9,58 +13,6 @@ interface Policy {
   duration: string
   coverage: string
 }
-
-const initialPolicies: Policy[] = [
-  {
-    id: 1,
-    name: "Car Insurance",
-    type: "Car",
-    duration: "1 Year",
-    coverage: "Comprehensive",
-  },
-  {
-    id: 2,
-    name: "Home Insurance",
-    type: "Home",
-    duration: "5 Years",
-    coverage: "Fire & Theft",
-  },
-  {
-    id: 3,
-    name: "Business Insurance",
-    type: "Business",
-    duration: "3 Years",
-    coverage: "Liability",
-  },
-  {
-    id: 4,
-    name: "Health Insurance",
-    type: "Health",
-    duration: "1 Year",
-    coverage: "Full Coverage",
-  },
-  {
-    id: 5,
-    name: "Health Insdurance",
-    type: "Health",
-    duration: "1 Year",
-    coverage: "Full Coverage",
-  },
-  {
-    id: 6,
-    name: "Health Insurancfde",
-    type: "Health",
-    duration: "1 Year",
-    coverage: "Full Coverage",
-  },
-  {
-    id: 7,
-    name: "Health Insurfgance",
-    type: "Health",
-    duration: "1 Year",
-    coverage: "Full Coverage",
-  },
-]
 
 const policyTypeIcon = (type: Policy["type"]) => {
   switch (type) {
@@ -82,16 +34,54 @@ interface InsuranceListProps {
 }
 
 const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
-  const [policies] = useState<Policy[]>(initialPolicies)
-  console.log(policies)
+  const [policies, setPolicies] = useState<Policy[]>([])
   const [search, setSearch] = useState<string>("")
   const [filter, setFilter] = useState<string>(category || "")
+  const [clicked, setClicked] = useState<number | null>(null)
+  const { contract } = useInsuranceContext()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const getInsurances = async () => {
+    const data = await readContract({
+      contract,
+      method:
+        "function getAllInsurances() view returns ((uint256 pid, address creator, string name, string description, string coverage, uint256 min_deposition_amount, uint256 deposit_amount_monthwise, uint256 duration, uint256 totalamount, uint256 no_of_investors, string insurance_type, uint256 safe_fees, address[] inverstorPid)[])",
+      params: [],
+    })
+    const formattedPolicies = data.map((item) => ({
+      id: Number(item.pid),
+      name: item.name,
+      type: item.insurance_type as Policy["type"],
+      duration: `${item.duration} Year(s)`,
+      coverage: item.coverage,
+      description: item.description,
+    }))
+
+    // Add dummy data for testing purposes
+    formattedPolicies.push({
+      id: 999,
+      name: "Dummy Insurance",
+      type: "Health",
+      duration: "2 Year(s)",
+      coverage: "Basic",
+      description: "whatever",
+    })
+
+    setPolicies(formattedPolicies)
+  }
+
+  useEffect(() => {
+    getInsurances()
+  }, [])
 
   const filteredPolicies = policies.filter(
     (policy) =>
       policy.name.toLowerCase().includes(search.toLowerCase()) &&
       (filter === "" || policy.type === filter),
   )
+
+  const toggleClick = (id: number) => {
+    setClicked(id === clicked ? null : id)
+  }
 
   return (
     <div className="h-screen w-screen bg-po">
@@ -124,11 +114,11 @@ const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
           </select>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 overflow-scroll max-h-[450px]">
+        <div className="grid grid-cols-1 gap-4 overflow-scroll max-h-[480px]">
           {filteredPolicies.map((policy) => (
             <div
               key={policy.id}
-              className="border border-teal-500 p-4 rounded-xl shadow-md bg-white hover:bg-green-100 flex flex-col md:flex-row justify-between items-start"
+              className="border border-teal-500 p-4 rounded-xl shadow-md bg-white hover:bg-green-100 flex flex-col justify-between items-start"
             >
               <div className="flex flex-col flex-1">
                 <div className="flex items-center gap-4 mb-2">
@@ -151,14 +141,31 @@ const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-4 mt-4 md:mt-0 ml-10">
-                <button className="bg-black text-white text-sm py-1 px-2 rounded-lg hover:bg-blue-600">
-                  View T&C
+              <div className="flex gap-4 mt-8 md:mt-0 ml-10">
+                <button
+                  className="bg-black text-white py-2 px-4 rounded hover:bg-gray-700"
+                  onClick={() => setIsModalOpen(true)} // Open modal on click
+                >
+                  T&C
                 </button>
-                <button className="bg-emerald-800 text-white text-sm py-1 px-2 rounded-lg hover:bg-green-600">
-                  View Policy
+                <Modal
+                  isOpen={isModalOpen}
+                  onClose={() => setIsModalOpen(false)}
+                  title="Terms and Conditions"
+                  content={policy.description}
+                />
+                <button
+                  onClick={() => toggleClick(policy.id)}
+                  className="bg-emerald-800 text-white text-sm py-1 px-2 rounded-lg hover:bg-green-600"
+                >
+                  {clicked === policy.id ? "Hide Policy" : "View Policy"}
                 </button>
               </div>
+              {clicked === policy.id && (
+                <div className="mt-4 w-full h-full">
+                  <PolicyPage pid={policy.id} />
+                </div>
+              )}
             </div>
           ))}
         </div>
