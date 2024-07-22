@@ -1,27 +1,40 @@
 import React, { useState } from "react"
 import { prepareContractCall, sendTransaction } from "thirdweb"
-import { useInsuranceContext } from "../contexts/context"
+import { useInsuranceContext } from "../context/context"
 import { createWallet } from "thirdweb/wallets"
 import { ethers } from "ethers"
-import { Investment } from "./types"
+interface Investment {
+  pid: number
+  creator: string
+  name: string
+  description: string
+  coverage: string
+  min_deposition_amount: string
+  deposit_amount_monthwise: string
+  duration: number
+  totalamount: string
+  no_of_investors: number
+  insurance_type: string
+  safe_fees: string
+}
 
-const InvestmentCard: React.FC<{ investment: Investment }> = ({
+const InvestmentMade: React.FC<{ investment: Investment }> = ({
   investment,
 }) => {
   const [ethAmount, setEthAmount] = useState("")
   const { contract, client } = useInsuranceContext()
 
-  const handlePayPremium = async () => {
+  const handlePayMoney = async () => {
     // Logic to handle premium payment
-    const transaction = await prepareContractCall({
+    const transaction = prepareContractCall({
       contract,
-      method: "function depositMonthly(uint256 _pid) payable",
+      method: "function payMoney(uint256 _pid) payable",
       params: [BigInt(investment.pid)],
-      value: ethers.parseEther(ethAmount),
+      value: ethers.parseEther("0"),
     })
     const wallet = createWallet("io.metamask")
     const account = await wallet.connect({
-      // pass the client you created with `createThirdwebClient()`
+      // pass the client you created with createThirdwebClient()
       client,
     })
     const { transactionHash } = await sendTransaction({
@@ -29,27 +42,27 @@ const InvestmentCard: React.FC<{ investment: Investment }> = ({
       account,
     })
     console.log(
-      `Paying premium for PID: ${investment.pid} with ${ethAmount} ETH`,
+      `Paying customers their money for PID: ${investment.pid} with  ETH,`,
     )
   }
 
-  const handleRequestClaim = async () => {
+  const handleWithdraw = async () => {
     // Logic to handle claim request
-    const transaction = await prepareContractCall({
+    const transaction = prepareContractCall({
       contract,
-      method: "function requestMoney(uint256 _pid)",
+      method: "function withdraw(uint256 _pid)",
       params: [BigInt(investment.pid)],
     })
     const wallet = createWallet("io.metamask")
     const account = await wallet.connect({
-      // pass the client you created with `createThirdwebClient()`
+      // pass the client you created with createThirdwebClient()
       client,
     })
     const { transactionHash } = await sendTransaction({
       transaction,
       account,
     })
-    console.log(`Requesting claim for PID: ${investment.pid}`)
+    console.log(`Requesting withdraw for PID: ${investment.pid}`)
   }
 
   return (
@@ -93,19 +106,19 @@ const InvestmentCard: React.FC<{ investment: Investment }> = ({
         />
         <button
           className="bg-teal-500 text-white py-2 px-4 rounded hover:bg-teal-600"
-          onClick={handlePayPremium}
+          onClick={handlePayMoney}
         >
-          Pay Premium
+          Pay Money
         </button>
         <button
           className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
-          onClick={handleRequestClaim}
+          onClick={handleWithdraw}
         >
-          Request Claim
+          Withdraw
         </button>
       </div>
     </div>
   )
 }
 
-export default InvestmentCard
+export default InvestmentMade

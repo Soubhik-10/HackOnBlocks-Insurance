@@ -6,25 +6,16 @@ import { useActiveAccount } from "thirdweb/react"
 import { useNavigate } from "react-router-dom"
 import { useInsuranceContext } from "../contexts/context"
 import InvestmentCard from "../components/InvestmentCard"
+import InvestmentMade from "../components/InvestmentMade"
+import { ethers } from "ethers"
 
-interface Investment {
-  pid: number
-  creator: string
-  name: string
-  description: string
-  coverage: string
-  min_deposition_amount: number
-  deposit_amount_monthwise: number
-  duration: number
-  totalamount: number
-  no_of_investors: number
-  insurance_type: string
-  safe_fees: number
-}
+// Dashboard.tsx
+import { Investment } from "../components/types" // Adjust the path as needed
 
 const Dashboard = () => {
   const [isUser, setIsUser] = useState(true)
-  const [investments, setInvestments] = useState<Investment[]>([])
+  const [userInvestments, setUserInvestments] = useState<Investment[]>([])
+  const [creatorInvestments, setCreatorInvestments] = useState<Investment[]>([])
   const address = useActiveAccount()?.address
   const navigate = useNavigate()
   const [registered, setRegistered] = useState(false)
@@ -50,8 +41,8 @@ const Dashboard = () => {
     }
   }
 
-  const getInvestmentsbyUser = async () => {
-    if (address) {
+  const getUserInvestments = async () => {
+    if (address && registered) {
       try {
         const data = await readContract({
           contract,
@@ -66,34 +57,76 @@ const Dashboard = () => {
           name: item.name,
           description: item.description,
           coverage: item.coverage,
-          min_deposition_amount: Number(item.min_deposition_amount),
-          deposit_amount_monthwise: Number(item.deposit_amount_monthwise),
+          min_deposition_amount: ethers.formatEther(
+            item.min_deposition_amount.toString(),
+          ),
+          deposit_amount_monthwise: ethers.formatEther(
+            item.deposit_amount_monthwise.toString(),
+          ),
           duration: Number(item.duration),
-          totalamount: Number(item.totalamount),
+          totalamount: ethers.formatEther(item.totalamount.toString()),
           no_of_investors: Number(item.no_of_investors),
           insurance_type: item.insurance_type,
-          safe_fees: Number(item.safe_fees),
+          safe_fees: ethers.formatEther(item.safe_fees.toString()),
         }))
 
+        // Add a dummy investment for testing
         formattedData.push({
           pid: 9299,
           creator: "0x123",
           name: "Dummy Insurance",
           description: "This is a dummy insurance policy.",
           coverage: "Basic",
-          min_deposition_amount: 1000,
-          deposit_amount_monthwise: 100,
+          min_deposition_amount: "1000",
+          deposit_amount_monthwise: "100",
           duration: 12,
-          totalamount: 1200,
+          totalamount: "1200",
           no_of_investors: 50,
           insurance_type: "Car",
-          safe_fees: 10,
+          safe_fees: "10",
         })
 
-        setInvestments(formattedData)
-        console.log("Investments:", formattedData)
+        setUserInvestments(formattedData)
+        console.log("User Investments:", formattedData)
       } catch (error) {
-        console.error("Error fetching investments:", error)
+        console.error("Error fetching user investments:", error)
+      }
+    }
+  }
+
+  const getCreatorInvestments = async () => {
+    if (address && registered) {
+      try {
+        const data = await readContract({
+          contract,
+          method:
+            "function investment_bought(address) view returns ((uint256 pid, address creator, string name, string description, string coverage, uint256 min_deposition_amount, uint256 deposit_amount_monthwise, uint256 duration, uint256 totalamount, uint256 no_of_investors, string insurance_type, uint256 safe_fees)[])",
+          params: [address],
+        })
+
+        const formattedData = data.map((item: any) => ({
+          pid: Number(item.pid),
+          creator: item.creator,
+          name: item.name,
+          description: item.description,
+          coverage: item.coverage,
+          min_deposition_amount: ethers.formatEther(
+            item.min_deposition_amount.toString(),
+          ),
+          deposit_amount_monthwise: ethers.formatEther(
+            item.deposit_amount_monthwise.toString(),
+          ),
+          duration: Number(item.duration),
+          totalamount: ethers.formatEther(item.totalamount.toString()),
+          no_of_investors: Number(item.no_of_investors),
+          insurance_type: item.insurance_type,
+          safe_fees: ethers.formatEther(item.safe_fees.toString()),
+        }))
+
+        setCreatorInvestments(formattedData)
+        console.log("Creator Investments:", formattedData)
+      } catch (error) {
+        console.error("Error fetching creator investments:", error)
       }
     }
   }
@@ -103,57 +136,62 @@ const Dashboard = () => {
   }, [address])
 
   useEffect(() => {
-    if (true) {
-      getInvestmentsbyUser()
+    if (registered) {
+      if (isUser) {
+        getUserInvestments()
+      } else {
+        getCreatorInvestments()
+      }
     } else {
       handleNotRegistered()
     }
-  }, [registered])
+  }, [registered, isUser])
 
   const handleNotRegistered = () => {
+    // Uncomment this to redirect if not registered
     // navigate("/register")
   }
-  {
-    console.log(investments)
-  }
+
   return (
     <div className="h-screen bg-po">
       <div className="flex flex-row justify-between">
-        <div>
-          <Header />
-        </div>
-        <div className="flex justify-end p-4 bg-white rounded-bl-3xl">
-          <button
-            className={`flex items-center px-4 py-2 mr-2 border-2 border-black ${
-              isUser ? "bg-teal-500" : "bg-teal-100 text-black"
-            } rounded-xl hover:bg-teal-600`}
-            onClick={toggleRole}
-          >
-            <FaUser className="mr-2" />
-            User
-          </button>
-          <button
-            className={`flex items-center px-4 py-2 border-2 border-black ${
-              !isUser ? "bg-teal-500" : "bg-teal-100 text-black"
-            } rounded-xl hover:bg-teal-600`}
-            onClick={toggleRole}
-          >
-            <FaCrown className="mr-2" />
-            Creator
-          </button>
+        <Header />
+        <div className=" justify-between p-4  rounded-bl-3xl">
+          <div className="flex justify-end">
+            <button
+              className={`flex items-center px-4 py-2 mr-2 border-2 border-black ${
+                isUser ? "bg-teal-500" : "bg-teal-100 text-black"
+              } rounded-xl hover:bg-teal-600`}
+              onClick={toggleRole}
+            >
+              <FaUser className="mr-2" />
+              User
+            </button>
+            <button
+              className={`flex items-center px-4 py-2 border-2 border-black ${
+                !isUser ? "bg-teal-500" : "bg-teal-100 text-black"
+              } rounded-xl hover:bg-teal-600`}
+              onClick={toggleRole}
+            >
+              <FaCrown className="mr-2" />
+              Creator
+            </button>
+          </div>
         </div>
       </div>
-      <div className="flex-1 flex justify-center items-center">
+      <div className="flex-1 flex justify-center items-center p-4 overflow-x-auto">
         {isUser ? (
-          <div className="p-4 overflow-x-auto">
-            <div className="flex gap-4">
-              {investments.map((investment) => (
-                <InvestmentCard key={investment.pid} investment={investment} />
-              ))}
-            </div>
+          <div className="flex gap-4">
+            {userInvestments.map((investment) => (
+              <InvestmentCard key={investment.pid} investment={investment} />
+            ))}
           </div>
         ) : (
-          <div>Creator Content</div>
+          <div className="flex gap-4">
+            {creatorInvestments.map((investment) => (
+              <InvestmentMade key={investment.pid} investment={investment} />
+            ))}
+          </div>
         )}
       </div>
     </div>

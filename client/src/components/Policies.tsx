@@ -4,7 +4,7 @@ import Header from "./Header"
 import { readContract } from "thirdweb"
 import { useInsuranceContext } from "../contexts/context"
 import PolicyPage from "../pages/PolicyPage"
-import Modal from "./modal"
+import Modal from "./Modal"
 
 interface Policy {
   id: number
@@ -12,6 +12,7 @@ interface Policy {
   type: "Car" | "Home" | "Business" | "Health"
   duration: string
   coverage: string
+  description: string
 }
 
 const policyTypeIcon = (type: Policy["type"]) => {
@@ -93,18 +94,20 @@ const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
           Insurance Policies
         </h1>
 
-        <div className="flex mb-4 gap-4">
+        <div className="flex mb-4 md:gap-4 gap-2">
           <input
             type="text"
             placeholder="Search by name"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="p-2 border outline-none border-green-500 rounded-xl flex-1 focus:border-teal-600 focus:border-4"
+            className="p-2 border outline-none border-green-500 rounded-xl flex-1
+             focus:border-teal-600 focus:border-4 md:w-full w-48"
           />
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="p-2 border border-green-500 rounded-xl outline-none focus:border-teal-600 focus:border-4"
+            className="p-2 border border-green-500 rounded-xl outline-none
+             focus:border-teal-600 focus:border-4 w-16 md:w-auto"
           >
             <option value="">All Types</option>
             <option value="Car">Car</option>
