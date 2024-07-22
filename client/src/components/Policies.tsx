@@ -41,6 +41,8 @@ const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
   const [clicked, setClicked] = useState<number | null>(null)
   const { contract } = useInsuranceContext()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalDescription, setModalDescription] = useState("")
+
   const getInsurances = async () => {
     const data = await readContract({
       contract,
@@ -57,16 +59,6 @@ const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
       description: item.description,
     }))
 
-    // Add dummy data for testing purposes
-    formattedPolicies.push({
-      id: 999,
-      name: "Dummy Insurance",
-      type: "Health",
-      duration: "2 Year(s)",
-      coverage: "Basic",
-      description: "whatever",
-    })
-
     setPolicies(formattedPolicies)
   }
 
@@ -82,6 +74,11 @@ const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
 
   const toggleClick = (id: number) => {
     setClicked(id === clicked ? null : id)
+  }
+
+  const openModal = (description: string) => {
+    setModalDescription(description)
+    setIsModalOpen(true)
   }
 
   return (
@@ -147,16 +144,10 @@ const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
               <div className="flex gap-4 mt-8 md:mt-0 ml-10">
                 <button
                   className="bg-black text-white py-2 px-4 rounded hover:bg-gray-700"
-                  onClick={() => setIsModalOpen(true)} // Open modal on click
+                  onClick={() => openModal(policy.description)}
                 >
                   T&C
                 </button>
-                <Modal
-                  isOpen={isModalOpen}
-                  onClose={() => setIsModalOpen(false)}
-                  title="Terms and Conditions"
-                  content={policy.description}
-                />
                 <button
                   onClick={() => toggleClick(policy.id)}
                   className="bg-emerald-800 text-white text-sm py-1 px-2 rounded-lg hover:bg-green-600"
@@ -172,6 +163,12 @@ const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
             </div>
           ))}
         </div>
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="Terms and Conditions"
+          content={modalDescription}
+        />
       </div>
     </div>
   )

@@ -1,8 +1,9 @@
 import React, { useState } from "react"
 import { prepareContractCall, sendTransaction } from "thirdweb"
-import { useInsuranceContext } from "../context/context"
+import { useInsuranceContext } from "../contexts/context"
 import { createWallet } from "thirdweb/wallets"
 import { ethers } from "ethers"
+
 interface Investment {
   pid: number
   creator: string
@@ -25,44 +26,44 @@ const InvestmentMade: React.FC<{ investment: Investment }> = ({
   const { contract, client } = useInsuranceContext()
 
   const handlePayMoney = async () => {
-    // Logic to handle premium payment
-    const transaction = prepareContractCall({
-      contract,
-      method: "function payMoney(uint256 _pid) payable",
-      params: [BigInt(investment.pid)],
-      value: ethers.parseEther("0"),
-    })
-    const wallet = createWallet("io.metamask")
-    const account = await wallet.connect({
-      // pass the client you created with createThirdwebClient()
-      client,
-    })
-    const { transactionHash } = await sendTransaction({
-      transaction,
-      account,
-    })
-    console.log(
-      `Paying customers their money for PID: ${investment.pid} with  ETH,`,
-    )
+    try {
+      const amount = ethers.parseEther(ethAmount) // Convert ethAmount to Ether
+      const transaction = await prepareContractCall({
+        contract,
+        method: "function payMoney(uint256 _pid) payable",
+        params: [BigInt(investment.pid)],
+      })
+      const wallet = createWallet("io.metamask")
+      const account = await wallet.connect({ client })
+      const { transactionHash } = await sendTransaction({
+        transaction,
+        account,
+      })
+      console.log(
+        `Paying customers their money for PID: ${investment.pid} with ${ethAmount} ETH`,
+      )
+    } catch (error) {
+      console.error("Error paying money:", error)
+    }
   }
 
   const handleWithdraw = async () => {
-    // Logic to handle claim request
-    const transaction = prepareContractCall({
-      contract,
-      method: "function withdraw(uint256 _pid)",
-      params: [BigInt(investment.pid)],
-    })
-    const wallet = createWallet("io.metamask")
-    const account = await wallet.connect({
-      // pass the client you created with createThirdwebClient()
-      client,
-    })
-    const { transactionHash } = await sendTransaction({
-      transaction,
-      account,
-    })
-    console.log(`Requesting withdraw for PID: ${investment.pid}`)
+    try {
+      const transaction = prepareContractCall({
+        contract,
+        method: "function withdraw(uint256 _pid)",
+        params: [BigInt(investment.pid)],
+      })
+      const wallet = createWallet("io.metamask")
+      const account = await wallet.connect({ client })
+      const { transactionHash } = await sendTransaction({
+        transaction,
+        account,
+      })
+      console.log(`Requesting withdraw for PID: ${investment.pid}`)
+    } catch (error) {
+      console.error("Error withdrawing:", error)
+    }
   }
 
   return (

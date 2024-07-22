@@ -94,37 +94,81 @@ const Dashboard = () => {
     }
   }
 
+  // const getCreatorInvestments = async () => {
+
+  //   if (address && registered) {
+  //     try {
+  //       const data = await readContract({
+  //         contract,
+  //         method:
+  //           "function investment_bought(address) view returns ((uint256 pid, address creator, string name, string description, string coverage, uint256 min_deposition_amount, uint256 deposit_amount_monthwise, uint256 duration, uint256 totalamount, uint256 no_of_investors, string insurance_type, uint256 safe_fees)[])",
+  //         params: [address],
+  //       })
+
+  //       const formattedData = data.map((item: any) => ({
+  //         pid: Number(item.pid),
+  //         creator: item.creator,
+  //         name: item.name,
+  //         description: item.description,
+  //         coverage: item.coverage,
+  //         min_deposition_amount: ethers.formatEther(
+  //           item.min_deposition_amount.toString(),
+  //         ),
+  //         deposit_amount_monthwise: ethers.formatEther(
+  //           item.deposit_amount_monthwise.toString(),
+  //         ),
+  //         duration: Number(item.duration),
+  //         totalamount: ethers.formatEther(item.totalamount.toString()),
+  //         no_of_investors: Number(item.no_of_investors),
+  //         insurance_type: item.insurance_type,
+  //         safe_fees: ethers.formatEther(item.safe_fees.toString()),
+  //       }))
+
+  //       setCreatorInvestments(formattedData)
+  //       console.log("Creator Investments:", formattedData)
+  //     } catch (error) {
+  //       console.error("Error fetching creator investments:", error)
+  //     }
+  //   }
+  // }
+
   const getCreatorInvestments = async () => {
-    if (address && registered) {
+    console.log("yoooo")
+    if (address) {
       try {
+        // Fetch single investment data
         const data = await readContract({
           contract,
           method:
-            "function investment_bought(address) view returns ((uint256 pid, address creator, string name, string description, string coverage, uint256 min_deposition_amount, uint256 deposit_amount_monthwise, uint256 duration, uint256 totalamount, uint256 no_of_investors, string insurance_type, uint256 safe_fees)[])",
+            "function investment_made(address) view returns (uint256 pid, address creator, string name, string description, string coverage, uint256 min_deposition_amount, uint256 deposit_amount_monthwise, uint256 duration, uint256 totalamount, uint256 no_of_investors, string insurance_type, uint256 safe_fees)",
           params: [address],
         })
 
-        const formattedData = data.map((item: any) => ({
-          pid: Number(item.pid),
-          creator: item.creator,
-          name: item.name,
-          description: item.description,
-          coverage: item.coverage,
-          min_deposition_amount: ethers.formatEther(
-            item.min_deposition_amount.toString(),
-          ),
-          deposit_amount_monthwise: ethers.formatEther(
-            item.deposit_amount_monthwise.toString(),
-          ),
-          duration: Number(item.duration),
-          totalamount: ethers.formatEther(item.totalamount.toString()),
-          no_of_investors: Number(item.no_of_investors),
-          insurance_type: item.insurance_type,
-          safe_fees: ethers.formatEther(item.safe_fees.toString()),
-        }))
+        console.log("Raw data:", data)
 
-        setCreatorInvestments(formattedData)
-        console.log("Creator Investments:", formattedData)
+        // Ensure data is an array
+        if (!Array.isArray(data)) {
+          throw new Error("Unexpected data format")
+        }
+
+        // Map raw data to an object
+        const formattedData: Investment = {
+          pid: Number(data[0]),
+          creator: data[1],
+          name: data[2],
+          description: data[3],
+          coverage: data[4],
+          min_deposition_amount: ethers.formatEther(data[5].toString()),
+          deposit_amount_monthwise: ethers.formatEther(data[6].toString()),
+          duration: Number(data[7]),
+          totalamount: ethers.formatEther(data[8].toString()),
+          no_of_investors: Number(data[9]),
+          insurance_type: data[10],
+          safe_fees: ethers.formatEther(data[11].toString()),
+        }
+
+        setCreatorInvestments([formattedData]) // Store as array
+        console.log("Creator Investments:", [formattedData])
       } catch (error) {
         console.error("Error fetching creator investments:", error)
       }
@@ -132,11 +176,7 @@ const Dashboard = () => {
   }
 
   useEffect(() => {
-    getRegisterInfo()
-  }, [address])
-
-  useEffect(() => {
-    if (registered) {
+    if (true) {
       if (isUser) {
         getUserInvestments()
       } else {
