@@ -1,78 +1,78 @@
-import React, { useState } from "react";
-import Header from "../components/Header";
-import { useInsuranceContext } from "../context/context";
-import { useActiveAccount } from "thirdweb/react";
-import { createWallet } from "thirdweb/wallets";
-import { prepareContractCall, readContract, sendTransaction } from "thirdweb";
-import { ethers } from "ethers";
+import React, { useState } from "react"
+import Header from "../components/Header"
+import { useInsuranceContext } from "../contexts/context"
+import { useActiveAccount } from "thirdweb/react"
+import { createWallet } from "thirdweb/wallets"
+import { prepareContractCall, readContract, sendTransaction } from "thirdweb"
+import { ethers } from "ethers"
 const RegisterUser: React.FC = () => {
   const [user, setUser] = useState({
     name: "",
-    age: ""
-  });
-  const [registerSuccess, setRegisterSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { contract, client } = useInsuranceContext();
-  const address = useActiveAccount()?.address;
-  const OWNER = import.meta.env.VITE_OWNER as string;
+    age: "",
+  })
+  const [registerSuccess, setRegisterSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { contract, client } = useInsuranceContext()
+  const address = useActiveAccount()?.address
+  const OWNER = import.meta.env.VITE_OWNER as string
   const isCustomer = async () => {
-    if (!address) return false;
-    const data = await readContract({ 
-      contract, 
-      method: "function isACustomer(address) view returns (bool)", 
-      params: [ethers.getAddress(address)]
-    });
-    return data;
-  };
+    if (!address) return false
+    const data = await readContract({
+      contract,
+      method: "function isACustomer(address) view returns (bool)",
+      params: [ethers.getAddress(address)],
+    })
+    return data
+  }
   const handleRegister = async () => {
     try {
       if (user.name && user.age) {
-        const customerExists = await isCustomer();
+        const customerExists = await isCustomer()
         if (customerExists) {
-          setError("User is already registered.");
-          return;
+          setError("User is already registered.")
+          return
         }
 
-        const wallet = createWallet("io.metamask");
-        const account = await wallet.connect({ client });
+        const wallet = createWallet("io.metamask")
+        const account = await wallet.connect({ client })
 
         const transaction = await prepareContractCall({
           contract,
           method: "function requestRegistration(string _name, uint256 _age)",
           params: [user.name, BigInt(user.age)],
-        });
+        })
 
         const { transactionHash } = await sendTransaction({
           transaction,
           account,
-        });
+        })
 
         if (transactionHash) {
-          setRegisterSuccess(true);
-          setTimeout(() => setRegisterSuccess(false), 3000);
-          setUser({ name: "", age: "" });
+          setRegisterSuccess(true)
+          setTimeout(() => setRegisterSuccess(false), 3000)
+          setUser({ name: "", age: "" })
         }
       } else {
-        setError("Please fill all fields correctly.");
+        setError("Please fill all fields correctly.")
       }
     } catch (err) {
-      console.error("Error adding user:", err);
-      setError("Failed to add User.");
+      console.error("Error adding user:", err)
+      setError("Failed to add User.")
     }
-  };
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setUser((prevUser) => ({
       ...prevUser,
       [name]: value,
-    }));
-  };
+    }))
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleRegister();
-  };
+    e.preventDefault()
+    handleRegister()
+  }
 
   return (
     <div className="h-screen bg-po overflow-hidden">
@@ -123,7 +123,7 @@ const RegisterUser: React.FC = () => {
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default RegisterUser;
+export default RegisterUser

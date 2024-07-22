@@ -88,8 +88,10 @@ const PolicyPage: React.FC<PolicyPageProps> = ({ pid }) => {
   }
   const handleBuyPolicy = async () => {
     const wallet = createWallet("io.metamask")
-    if (!registered) handleNotRegistered()
-    else {
+    if (!registered) {
+      handleNotRegistered()
+      console.log(registered)
+    } else {
       const account = await wallet.connect({
         // pass the client you created with `createThirdwebClient()`
         client,

@@ -51,7 +51,7 @@ const Dashboard = () => {
   }
 
   const getInvestmentsbyUser = async () => {
-    if (address && registered) {
+    if (address) {
       try {
         const data = await readContract({
           contract,
@@ -113,7 +113,9 @@ const Dashboard = () => {
   const handleNotRegistered = () => {
     // navigate("/register")
   }
-
+  {
+    console.log(investments)
+  }
   return (
     <div className="h-screen bg-po">
       <div className="flex flex-row justify-between">

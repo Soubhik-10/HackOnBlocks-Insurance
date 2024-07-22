@@ -3,7 +3,7 @@ import React from "react"
 import { Link } from "react-router-dom"
 import { ConnectButton, useActiveAccount } from "thirdweb/react"
 import { useInsuranceContext } from "../contexts/context"
-
+import logo from "../assets/logo.jpeg"
 const Header: React.FC = () => {
   const { wallets, client } = useInsuranceContext()
   const address = useActiveAccount()?.address
@@ -14,7 +14,9 @@ const Header: React.FC = () => {
     <div className="p-2 flex justify-between items-center br-1 sticky top-4 z-10 h-14 mt-2">
       <div className="flex items-center">
         <div className="flex justify-center items-center bg-white rounded-full w-14 h-14 ">
-          <Link to="/">Logo</Link>
+          <Link to="/">
+            <img src={logo} alt="logo" className="rounded-full" />
+          </Link>
         </div>
         <div className="flex gap-2 items-center bg-white br-1 h-[60px] p-2 rounded-lg border-2 shadow-md border-teal-500">
           <nav className="flex gap-6 items-center text-black">

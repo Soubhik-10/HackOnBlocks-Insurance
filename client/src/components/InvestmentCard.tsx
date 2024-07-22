@@ -26,7 +26,7 @@ const InvestmentCard: React.FC<{ investment: Investment }> = ({
 
   const handlePayPremium = async () => {
     // Logic to handle premium payment
-    const transaction = prepareContractCall({
+    const transaction = await prepareContractCall({
       contract,
       method: "function depositMonthly(uint256 _pid) payable",
       params: [BigInt(investment.pid)],
@@ -48,7 +48,7 @@ const InvestmentCard: React.FC<{ investment: Investment }> = ({
 
   const handleRequestClaim = async () => {
     // Logic to handle claim request
-    const transaction = prepareContractCall({
+    const transaction = await prepareContractCall({
       contract,
       method: "function requestMoney(uint256 _pid)",
       params: [BigInt(investment.pid)],
