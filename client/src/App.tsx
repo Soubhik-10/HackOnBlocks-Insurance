@@ -4,18 +4,21 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
 import Home from "./pages/Home"
 import Policies from "./components/Policies"
 import CreateInsuranceScheme from "./pages/Create"
-import PolicyPage from "./pages/PolicyPage"
+import { InsuranceContextProvider } from "./contexts/context"
+import Dashboard from "./pages/Dashboard"
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/services" element={<Policies />} />
-        <Route path="/create" element={<CreateInsuranceScheme />} />
-        <Route path="/dashboard" element={<PolicyPage pid={4} />} />
-      </Routes>
-    </Router>
+    <InsuranceContextProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/services" element={<Policies />} />
+          <Route path="/create" element={<CreateInsuranceScheme />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
+      </Router>
+    </InsuranceContextProvider>
   )
 }
 
