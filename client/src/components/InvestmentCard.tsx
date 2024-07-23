@@ -1,10 +1,24 @@
 import React, { useState } from "react"
 import { prepareContractCall, sendTransaction } from "thirdweb"
-import { useInsuranceContext } from "../contexts/context"
+
 import { createWallet } from "thirdweb/wallets"
 import { ethers } from "ethers"
-import { Investment } from "./types"
 
+import { useInsuranceContext } from "../contexts/context"
+interface Investment {
+  pid: number
+  creator: string
+  name: string
+  description: string
+  coverage: string
+  min_deposition_amount: string
+  deposit_amount_monthwise: string
+  duration: number
+  totalamount: string
+  no_of_investors: number
+  insurance_type: string
+  safe_fees: string
+}
 const InvestmentCard: React.FC<{ investment: Investment }> = ({
   investment,
 }) => {
@@ -21,16 +35,14 @@ const InvestmentCard: React.FC<{ investment: Investment }> = ({
     })
     const wallet = createWallet("io.metamask")
     const account = await wallet.connect({
-      // pass the client you created with `createThirdwebClient()`
+      // pass the client you created with createThirdwebClient()
       client,
     })
     const { transactionHash } = await sendTransaction({
       transaction,
       account,
     })
-    console.log(
-      `Paying premium for PID: ${investment.pid} with ${ethAmount} ETH`,
-    )
+    console.log("Paying premium for PID:  ETH,")
   }
 
   const handleRequestClaim = async () => {
@@ -42,14 +54,14 @@ const InvestmentCard: React.FC<{ investment: Investment }> = ({
     })
     const wallet = createWallet("io.metamask")
     const account = await wallet.connect({
-      // pass the client you created with `createThirdwebClient()`
+      // pass the client you created with createThirdwebClient()
       client,
     })
     const { transactionHash } = await sendTransaction({
       transaction,
       account,
     })
-    console.log(`Requesting claim for PID: ${investment.pid}`)
+    console.log("Requesting claim for PID: ${investment.pid}")
   }
 
   return (

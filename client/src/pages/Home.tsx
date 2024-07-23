@@ -18,12 +18,12 @@ const Home: React.FC = () => {
         <Header />
         <div className="flex flex-col justify-center items-center h-3/4 mt-20 px-4">
           <div className="flex flex-col lg:flex-row justify-center items-center gap-4">
-            <div className="text-center text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white font-serif mt-12">
+            <div className="text-center text-5xl sm:text-6xl md:text-7xl lg:text-8xl lg:mr-56 font-bold text-white font-serif mt-12">
               From Home to Health
             </div>
           </div>
           <div className="w-full flex justify-center mt-10">
-            <div className="text-center text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white font-serif">
+            <div className="text-center text-5xl sm:text-6xl md:text-7xl lg:ml-56 lg:text-8xl font-bold text-white font-serif">
               We Cover Everything
             </div>
           </div>

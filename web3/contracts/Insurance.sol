@@ -6,7 +6,6 @@ error InsufficientFundToStartInsurance();
 error NotAValidPid();
 error NotEnoughFund();
 error NotValidParticularPid();
-error NotValidMonthsKept();
 error RegisteredAsACustomer();
 error InvalidCreator();
 
@@ -35,8 +34,9 @@ contract Insurance {
         uint256 age;
     }
 
-    mapping(address => InsuranceSchemes) public investment_made;
-    mapping(address => InsuranceSchemes) public investment_bought;
+    // Mappings for storing different insurance schemes and user investments
+    mapping(address => InsuranceSchemes[]) public investment_made;
+    mapping(address => InsuranceSchemes[]) public investment_bought;
     mapping(uint256 => InsuranceSchemes) public insurance_scheme_list;
     mapping(uint256 => InsuranceSchemes) public car_insurance_scheme_list;
     mapping(uint256 => InsuranceSchemes) public health_insurance_scheme_list;
@@ -58,6 +58,7 @@ contract Insurance {
     uint256 totalCountOthersInvestment = 0;
     uint256 totalInvestors = 0;
 
+    // Events for logging actions
     event InsuranceAdded(
         uint256 pid,
         address payable creator,
@@ -85,6 +86,17 @@ contract Insurance {
         owner = msg.sender;
     }
 
+    /**
+     * @dev Create a new insurance scheme.
+     * @param _name Name of the insurance scheme.
+     * @param _description Description of the insurance scheme.
+     * @param _coverage Coverage details of the insurance scheme.
+     * @param _min_deposit_amount Minimum deposit amount required.
+     * @param _deposit_amount_monthwise Monthly deposit amount.
+     * @param _duration Duration of the insurance scheme.
+     * @param _insurance_type Type of insurance.
+     * @param _safe_fees Safety fees for the insurance scheme.
+     */
     function createInsurance(
         string memory _name,
         string memory _description,
@@ -118,7 +130,7 @@ contract Insurance {
         addInsuranceToCategory(insurancescheme);
 
         insurancescheme.totalamount = msg.value;
-        investment_made[insurancescheme.creator] = insurancescheme;
+        investment_made[insurancescheme.creator].push(insurancescheme);
         insurances.push(insurancescheme);
         emit InsuranceAdded(
             insurancescheme.pid,
@@ -135,6 +147,10 @@ contract Insurance {
         );
     }
 
+    /**
+     * @dev Add an insurance scheme to the appropriate category.
+     * @param insurancescheme The insurance scheme to categorize.
+     */
     function addInsuranceToCategory(
         InsuranceSchemes storage insurancescheme
     ) internal {
@@ -173,6 +189,10 @@ contract Insurance {
         }
     }
 
+    /**
+     * @dev Deposit an initial amount for a specific insurance scheme.
+     * @param _pid The ID of the insurance scheme.
+     */
     function depositInitialAmount(uint256 _pid) external payable {
         if (_pid > totalCountInvestments) revert NotAValidPid();
         InsuranceSchemes storage insurancescheme = insurance_scheme_list[_pid];
@@ -184,7 +204,7 @@ contract Insurance {
         if (success) {
             insurancescheme.no_of_investors++;
             insurancescheme.totalamount += msg.value;
-            investment_bought[msg.sender] = insurancescheme;
+            investment_bought[msg.sender].push(insurancescheme);
             investors[_pid] = msg.sender;
             amountKept[_pid][msg.sender] = msg.value;
             insurancescheme.inverstorPid.push(msg.sender);
@@ -192,6 +212,10 @@ contract Insurance {
         emit InitialDepositAmount(_pid, msg.value, success, data);
     }
 
+    /**
+     * @dev Deposit a monthly amount for a specific insurance scheme.
+     * @param _pid The ID of the insurance scheme.
+     */
     function depositMonthly(uint256 _pid) external payable {
         if (_pid > totalCountInvestments) revert NotAValidPid();
         InsuranceSchemes storage insurancescheme = insurance_scheme_list[_pid];
@@ -207,14 +231,21 @@ contract Insurance {
         emit PaymentSuccess(_pid);
     }
 
+    /**
+     * @dev Request money from a specific insurance scheme.
+     * @param _pid The ID of the insurance scheme.
+     */
     function requestMoney(uint256 _pid) external {
         if (_pid > totalCountInvestments) revert NotAValidPid();
-        // InsuranceSchemes storage insurancescheme = insurance_scheme_list[_pid];
         requestPid[_pid][msg.sender] = true;
         emit RequestSuccess(_pid, true);
     }
 
-    function payMoney(uint256 _pid) external payable {
+    /**
+     * @dev Pay money back to investors of a specific insurance scheme.
+     * @param _pid The ID of the insurance scheme.
+     */
+    function payMoney(uint256 _pid) external {
         InsuranceSchemes storage insurancescheme = insurance_scheme_list[_pid];
         uint256 nosGranted;
         if (_pid > totalCountInvestments) revert NotAValidPid();
@@ -225,8 +256,6 @@ contract Insurance {
                 insurancescheme.inverstorPid[i]
             );
             if (requestPid[_pid][requestor]) {
-                if (monthKept[_pid][requestor] < insurancescheme.duration)
-                    revert NotValidMonthsKept();
                 (bool success, ) = requestor.call{
                     value: amountKept[_pid][requestor]
                 }("");
@@ -240,6 +269,11 @@ contract Insurance {
         insurancescheme.no_of_investors -= nosGranted;
     }
 
+    /**
+     * @dev Get details of a specific insurance scheme.
+     * @param _pid The ID of the insurance scheme.
+     * @return Insurance scheme details.
+     */
     function getInsurance(
         uint256 _pid
     ) external view returns (InsuranceSchemes memory) {
@@ -247,6 +281,11 @@ contract Insurance {
         return insurance_scheme_list[_pid];
     }
 
+    /**
+     * @dev Register a customer in the system.
+     * @param _name Name of the customer.
+     * @param _age Age of the customer.
+     */
     function requestRegistration(string memory _name, uint256 _age) external {
         if (isACustomer[msg.sender]) revert RegisteredAsACustomer();
         totalInvestors++;
@@ -259,6 +298,10 @@ contract Insurance {
         isACustomer[msg.sender] = true;
     }
 
+    /**
+     * @dev Withdraw safety fees by the creator.
+     * @param _pid The ID of the insurance scheme.
+     */
     function withdraw(uint256 _pid) external {
         InsuranceSchemes storage insurancescheme = insurance_scheme_list[_pid];
         if (insurancescheme.creator != msg.sender) revert InvalidCreator();
@@ -268,13 +311,16 @@ contract Insurance {
             "Insufficient funds"
         );
 
-        // Transfer the specified amount to the owner
         (bool success, ) = insurancescheme.creator.call{
             value: insurancescheme.safe_fees
         }("");
         require(success, "Transfer failed");
     }
 
+    /**
+     * @dev Get all insurance schemes.
+     * @return Array of all insurance schemes.
+     */
     function getAllInsurances()
         public
         view
@@ -283,7 +329,31 @@ contract Insurance {
         return insurances;
     }
 
+    /**
+     * @dev Get all investments made by an address.
+     * @param _address The address of the investor.
+     * @return Array of insurance schemes invested in.
+     */
+    function getInvestmentsMade(
+        address _address
+    ) external view returns (InsuranceSchemes[] memory) {
+        return investment_made[_address];
+    }
+
+    /**
+     * @dev Get all investments bought by an address.
+     * @param _address The address of the buyer.
+     * @return Array of insurance schemes bought.
+     */
+    function getInvestmentsBought(
+        address _address
+    ) external view returns (InsuranceSchemes[] memory) {
+        return investment_bought[_address];
+    }
+
+    // Fallback function to receive ether
     fallback() external payable {}
 
+    // Receive function to accept payments
     receive() external payable {}
 }

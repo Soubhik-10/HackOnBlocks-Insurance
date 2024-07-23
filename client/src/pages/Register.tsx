@@ -84,6 +84,9 @@ const RegisterUser: React.FC = () => {
           onSubmit={handleSubmit}
           className="w-full max-w-2xl p-6 border-2 border-green-500 rounded-lg blue-glassmorphism overflow-y-auto h-1/2"
         >
+          <h2 className="text-white fonr-bold text-3xl mb-2">
+            Register Your Name and Age
+          </h2>
           <div className="mb-2">
             <label htmlFor="name" className="block text-white font-bold mb-2">
               Name

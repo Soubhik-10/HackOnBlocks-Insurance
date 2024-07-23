@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import Header from "../components/Header"
 import { useInsuranceContext } from "../contexts/context"
 import { useActiveAccount } from "thirdweb/react"
@@ -83,7 +83,12 @@ const CreateInsuranceScheme: React.FC = () => {
       setError("Failed to create insurance scheme.")
     }
   }
-
+  useEffect(() => {
+    setTimeout(() => {
+      setError("")
+    }, 3000)
+    return () => {}
+  }, [error])
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement

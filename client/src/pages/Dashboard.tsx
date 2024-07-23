@@ -20,10 +20,19 @@ const Dashboard = () => {
   const navigate = useNavigate()
   const [registered, setRegistered] = useState(false)
   const { contract } = useInsuranceContext()
-
+  const [loading, setLoading] = useState(true)
   const toggleRole = () => {
     setIsUser(!isUser)
   }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await getRegisterInfo()
+      setLoading(false)
+    }
+
+    fetchData()
+  }, [address])
 
   const getRegisterInfo = async () => {
     if (address) {
@@ -33,7 +42,7 @@ const Dashboard = () => {
           method: "function isACustomer(address) view returns (bool)",
           params: [address],
         })
-        console.log("Registered:", data)
+        console.log("Fetched Registration Data:", data)
         setRegistered(data)
       } catch (error) {
         console.error("Error fetching registration info:", error)
@@ -42,50 +51,33 @@ const Dashboard = () => {
   }
 
   const getUserInvestments = async () => {
-    if (address && registered) {
+    console.log("Fetching user investments...")
+    if (address) {
       try {
         const data = await readContract({
           contract,
           method:
-            "function investment_bought(address) view returns ((uint256 pid, address creator, string name, string description, string coverage, uint256 min_deposition_amount, uint256 deposit_amount_monthwise, uint256 duration, uint256 totalamount, uint256 no_of_investors, string insurance_type, uint256 safe_fees)[])",
+            "function getInvestmentsBought(address _address) view returns ((uint256 pid, address creator, string name, string description, string coverage, uint256 min_deposition_amount, uint256 deposit_amount_monthwise, uint256 duration, uint256 totalamount, uint256 no_of_investors, string insurance_type, uint256 safe_fees, address[] inverstorPid)[])",
           params: [address],
         })
-
-        const formattedData = data.map((item: any) => ({
-          pid: Number(item.pid),
-          creator: item.creator,
-          name: item.name,
-          description: item.description,
-          coverage: item.coverage,
-          min_deposition_amount: ethers.formatEther(
-            item.min_deposition_amount.toString(),
-          ),
+        console.log("Raw data:", data)
+        if (!Array.isArray(data)) throw new Error("Unexpected data format")
+        const formattedData = data.map((investment) => ({
+          pid: Number(investment[0]),
+          creator: investment[1],
+          name: investment[2],
+          description: investment[3],
+          coverage: investment[4],
+          min_deposition_amount: ethers.formatEther(investment[5].toString()),
           deposit_amount_monthwise: ethers.formatEther(
-            item.deposit_amount_monthwise.toString(),
+            investment[6].toString(),
           ),
-          duration: Number(item.duration),
-          totalamount: ethers.formatEther(item.totalamount.toString()),
-          no_of_investors: Number(item.no_of_investors),
-          insurance_type: item.insurance_type,
-          safe_fees: ethers.formatEther(item.safe_fees.toString()),
+          duration: Number(investment[7]),
+          totalamount: ethers.formatEther(investment[8].toString()),
+          no_of_investors: Number(investment[9]),
+          insurance_type: investment[10],
+          safe_fees: ethers.formatEther(investment[11].toString()),
         }))
-
-        // Add a dummy investment for testing
-        formattedData.push({
-          pid: 9299,
-          creator: "0x123",
-          name: "Dummy Insurance",
-          description: "This is a dummy insurance policy.",
-          coverage: "Basic",
-          min_deposition_amount: "1000",
-          deposit_amount_monthwise: "100",
-          duration: 12,
-          totalamount: "1200",
-          no_of_investors: 50,
-          insurance_type: "Car",
-          safe_fees: "10",
-        })
-
         setUserInvestments(formattedData)
         console.log("User Investments:", formattedData)
       } catch (error) {
@@ -94,81 +86,63 @@ const Dashboard = () => {
     }
   }
 
-  // const getCreatorInvestments = async () => {
-
-  //   if (address && registered) {
-  //     try {
-  //       const data = await readContract({
-  //         contract,
-  //         method:
-  //           "function investment_bought(address) view returns ((uint256 pid, address creator, string name, string description, string coverage, uint256 min_deposition_amount, uint256 deposit_amount_monthwise, uint256 duration, uint256 totalamount, uint256 no_of_investors, string insurance_type, uint256 safe_fees)[])",
-  //         params: [address],
-  //       })
-
-  //       const formattedData = data.map((item: any) => ({
-  //         pid: Number(item.pid),
-  //         creator: item.creator,
-  //         name: item.name,
-  //         description: item.description,
-  //         coverage: item.coverage,
-  //         min_deposition_amount: ethers.formatEther(
-  //           item.min_deposition_amount.toString(),
-  //         ),
-  //         deposit_amount_monthwise: ethers.formatEther(
-  //           item.deposit_amount_monthwise.toString(),
-  //         ),
-  //         duration: Number(item.duration),
-  //         totalamount: ethers.formatEther(item.totalamount.toString()),
-  //         no_of_investors: Number(item.no_of_investors),
-  //         insurance_type: item.insurance_type,
-  //         safe_fees: ethers.formatEther(item.safe_fees.toString()),
-  //       }))
-
-  //       setCreatorInvestments(formattedData)
-  //       console.log("Creator Investments:", formattedData)
-  //     } catch (error) {
-  //       console.error("Error fetching creator investments:", error)
-  //     }
-  //   }
-  // }
-
   const getCreatorInvestments = async () => {
-    console.log("yoooo")
+    console.log("Fetching creator investments...")
     if (address) {
       try {
-        // Fetch single investment data
         const data = await readContract({
           contract,
           method:
-            "function investment_made(address) view returns (uint256 pid, address creator, string name, string description, string coverage, uint256 min_deposition_amount, uint256 deposit_amount_monthwise, uint256 duration, uint256 totalamount, uint256 no_of_investors, string insurance_type, uint256 safe_fees)",
+            "function getInvestmentsMade(address _address) view returns ((uint256 pid, address creator, string name, string description, string coverage, uint256 min_deposition_amount, uint256 deposit_amount_monthwise, uint256 duration, uint256 totalamount, uint256 no_of_investors, string insurance_type, uint256 safe_fees, address[] inverstorPid)[])",
           params: [address],
         })
+        console.log("Raw data:", data) // Log raw data
 
-        console.log("Raw data:", data)
+        if (!Array.isArray(data)) throw new Error("Unexpected data format")
 
-        // Ensure data is an array
-        if (!Array.isArray(data)) {
-          throw new Error("Unexpected data format")
+        // Helper function to convert bigint to Ether (formatted as string)
+        const convertBigIntToEther = (bigintValue: bigint): string => {
+          // Convert bigint to number and divide by 1e18
+          return (Number(bigintValue) / 1e18).toFixed(4) // Format to 4 decimal places
         }
 
-        // Map raw data to an object
-        const formattedData: Investment = {
-          pid: Number(data[0]),
-          creator: data[1],
-          name: data[2],
-          description: data[3],
-          coverage: data[4],
-          min_deposition_amount: ethers.formatEther(data[5].toString()),
-          deposit_amount_monthwise: ethers.formatEther(data[6].toString()),
-          duration: Number(data[7]),
-          totalamount: ethers.formatEther(data[8].toString()),
-          no_of_investors: Number(data[9]),
-          insurance_type: data[10],
-          safe_fees: ethers.formatEther(data[11].toString()),
-        }
+        // Map raw data to formatted data
+        const formattedData = data
+          .map((investment: any) => {
+            if (!investment) {
+              console.warn("Skipping undefined investment:", investment)
+              return null // Return null if investment is not valid
+            }
 
-        setCreatorInvestments([formattedData]) // Store as array
-        console.log("Creator Investments:", [formattedData])
+            return {
+              pid: investment.pid ? Number(investment.pid) : 0,
+              creator: investment.creator || "",
+              name: investment.name || "",
+              description: investment.description || "",
+              coverage: investment.coverage || "",
+              min_deposition_amount: investment.min_deposition_amount
+                ? convertBigIntToEther(investment.min_deposition_amount)
+                : "0",
+              deposit_amount_monthwise: investment.deposit_amount_monthwise
+                ? convertBigIntToEther(investment.deposit_amount_monthwise)
+                : "0",
+              duration: investment.duration ? Number(investment.duration) : 0,
+              totalamount: investment.totalamount
+                ? convertBigIntToEther(investment.totalamount)
+                : "0",
+              no_of_investors: investment.no_of_investors
+                ? Number(investment.no_of_investors)
+                : 0,
+              insurance_type: investment.insurance_type || "",
+              safe_fees: investment.safe_fees
+                ? convertBigIntToEther(investment.safe_fees)
+                : "0",
+            }
+          })
+          .filter((item): item is Investment => item !== null) // Type predicate to filter null values
+
+        console.log("Formatted Data:", formattedData) // Log formatted data
+        setCreatorInvestments(formattedData as Investment[])
       } catch (error) {
         console.error("Error fetching creator investments:", error)
       }
@@ -176,20 +150,25 @@ const Dashboard = () => {
   }
 
   useEffect(() => {
-    if (true) {
+    if (loading) return // Do nothing while loading
+
+    if (registered) {
       if (isUser) {
         getUserInvestments()
       } else {
         getCreatorInvestments()
       }
     } else {
+      console.log("Navigating to register...")
       handleNotRegistered()
     }
-  }, [registered, isUser])
+  }, [registered, isUser, loading])
 
   const handleNotRegistered = () => {
-    // Uncomment this to redirect if not registered
-    // navigate("/register")
+    console.log("Redirecting to register page...")
+    setTimeout(() => {
+      // navigate("/register")
+    }, 10000) // Delay of 10 seconds
   }
 
   return (
