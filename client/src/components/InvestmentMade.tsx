@@ -22,15 +22,18 @@ interface Investment {
 const InvestmentMade: React.FC<{ investment: Investment }> = ({
   investment,
 }) => {
-  const [ethAmount, setEthAmount] = useState("")
   const { contract, client } = useInsuranceContext()
+  const [transactionStatus, setTransactionStatus] = useState<string | null>(
+    null,
+  )
 
   const handlePayMoney = async () => {
     try {
-      const amount = ethers.parseEther(ethAmount) // Convert ethAmount to Ether
+      setTransactionStatus(null)
+      // Convert ethAmount to Ether
       const transaction = await prepareContractCall({
         contract,
-        method: "function payMoney(uint256 _pid) payable",
+        method: "function payMoney(uint256 _pid)",
         params: [BigInt(investment.pid)],
       })
       const wallet = createWallet("io.metamask")
@@ -40,16 +43,19 @@ const InvestmentMade: React.FC<{ investment: Investment }> = ({
         account,
       })
       console.log(
-        `Paying customers their money for PID: ${investment.pid} with ${ethAmount} ETH`,
+        `Paying customers their money for PID: ${investment.pid} with ETH`,
       )
+      setTransactionStatus("Pay Money transaction successful!")
     } catch (error) {
       console.error("Error paying money:", error)
+      setTransactionStatus("Error paying money")
     }
   }
 
   const handleWithdraw = async () => {
     try {
-      const transaction = prepareContractCall({
+      setTransactionStatus(null)
+      const transaction = await prepareContractCall({
         contract,
         method: "function withdraw(uint256 _pid)",
         params: [BigInt(investment.pid)],
@@ -61,8 +67,10 @@ const InvestmentMade: React.FC<{ investment: Investment }> = ({
         account,
       })
       console.log(`Requesting withdraw for PID: ${investment.pid}`)
+      setTransactionStatus("Withdraw transaction successful!")
     } catch (error) {
       console.error("Error withdrawing:", error)
+      setTransactionStatus("Error withdrawing")
     }
   }
 
@@ -81,7 +89,7 @@ const InvestmentMade: React.FC<{ investment: Investment }> = ({
           <strong>Min Deposit:</strong> {investment.min_deposition_amount} ETH
         </div>
         <div>
-          <strong>Monthly Deposit:</strong>{" "}
+          <strong>Monthly Deposit:</strong>
           {investment.deposit_amount_monthwise} ETH
         </div>
         <div>
@@ -97,14 +105,7 @@ const InvestmentMade: React.FC<{ investment: Investment }> = ({
           <strong>Safe Fees:</strong> {investment.safe_fees} ETH
         </div>
       </div>
-      <div className="flex flex-wrap gap-4 mb-4">
-        <input
-          type="text"
-          value={ethAmount}
-          onChange={(e) => setEthAmount(e.target.value)}
-          placeholder="ETH Amount"
-          className="p-2 border-gray-300 rounded-lg outline-none focus:border-teal-600 border-2"
-        />
+      <div className="flex gap-10 mb-4">
         <button
           className="bg-teal-500 text-white py-2 px-4 rounded hover:bg-teal-600"
           onClick={handlePayMoney}
@@ -118,6 +119,17 @@ const InvestmentMade: React.FC<{ investment: Investment }> = ({
           Withdraw
         </button>
       </div>
+      {transactionStatus && (
+        <div
+          className={`mt-4 p-2 rounded ${
+            transactionStatus.includes("successful")
+              ? "text-green-500"
+              : "text-red-500"
+          }`}
+        >
+          {transactionStatus}
+        </div>
+      )}
     </div>
   )
 }

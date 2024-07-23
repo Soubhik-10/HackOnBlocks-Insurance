@@ -37,10 +37,14 @@ const Header: React.FC = () => {
       </div>
       <div
         className={`${
-          isOpen ? "flex" : "hidden"
+          isOpen ? "flex blue-glassmorphism text-white" : "hidden"
         } lg:flex lg:flex-row flex-col w-full lg:w-auto gap-4 lg:gap-6 items-center bg-white p-2 border-2 shadow-md border-teal-500 mt-4 lg:mt-0 rounded-3xl`}
       >
-        <nav className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-center text-black">
+        <nav
+          className={`flex flex-col lg:flex-row gap-4 lg:gap-6 items-center ${
+            isOpen ? " text-white" : "text-black"
+          }`}
+        >
           <Link
             to="/"
             className="text-lg font-semibold hover:bg-teal-300 hover:text-black rounded-full p-2"

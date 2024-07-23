@@ -54,6 +54,7 @@ const Dashboard = () => {
     console.log("Fetching user investments...")
     if (address) {
       try {
+        // Fetch single investment data
         const data = await readContract({
           contract,
           method:
@@ -62,22 +63,44 @@ const Dashboard = () => {
         })
         console.log("Raw data:", data)
         if (!Array.isArray(data)) throw new Error("Unexpected data format")
-        const formattedData = data.map((investment) => ({
-          pid: Number(investment[0]),
-          creator: investment[1],
-          name: investment[2],
-          description: investment[3],
-          coverage: investment[4],
-          min_deposition_amount: ethers.formatEther(investment[5].toString()),
-          deposit_amount_monthwise: ethers.formatEther(
-            investment[6].toString(),
-          ),
-          duration: Number(investment[7]),
-          totalamount: ethers.formatEther(investment[8].toString()),
-          no_of_investors: Number(investment[9]),
-          insurance_type: investment[10],
-          safe_fees: ethers.formatEther(investment[11].toString()),
-        }))
+        const convertBigIntToEther = (bigintValue: bigint): string => {
+          // Convert bigint to number and divide by 1e18
+          return (Number(bigintValue) / 1e18).toFixed(4) // Format to 4 decimal places
+        }
+        const formattedData = data
+          .map((investment: any) => {
+            if (!investment) {
+              console.warn("Skipping undefined investment:", investment)
+              return null // Return null if investment is not valid
+            }
+
+            return {
+              pid: investment.pid ? Number(investment.pid) : 0,
+              creator: investment.creator || "",
+              name: investment.name || "",
+              description: investment.description || "",
+              coverage: investment.coverage || "",
+              min_deposition_amount: investment.min_deposition_amount
+                ? convertBigIntToEther(investment.min_deposition_amount)
+                : "0",
+              deposit_amount_monthwise: investment.deposit_amount_monthwise
+                ? convertBigIntToEther(investment.deposit_amount_monthwise)
+                : "0",
+              duration: investment.duration ? Number(investment.duration) : 0,
+              totalamount: investment.totalamount
+                ? convertBigIntToEther(investment.totalamount)
+                : "0",
+              no_of_investors: investment.no_of_investors
+                ? Number(investment.no_of_investors)
+                : 0,
+              insurance_type: investment.insurance_type || "",
+              safe_fees: investment.safe_fees
+                ? convertBigIntToEther(investment.safe_fees)
+                : "0",
+            }
+          })
+          .filter((item): item is Investment => item !== null)
+
         setUserInvestments(formattedData)
         console.log("User Investments:", formattedData)
       } catch (error) {
@@ -148,11 +171,7 @@ const Dashboard = () => {
       }
     }
   }
-  useEffect(() => {
-    setTimeout(() => {
-      if (!registered) handleNotRegistered()
-    }, 10000)
-  }, [registered])
+
   useEffect(() => {
     if (loading) return // Do nothing while loading
 
@@ -174,7 +193,6 @@ const Dashboard = () => {
       // navigate("/register")
     }, 10000) // Delay of 10 seconds
   }
-
   return (
     <div className="h-screen bg-po">
       <div className="sticky top-0 z-10 flex flex-row justify-between items-center">
