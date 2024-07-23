@@ -77,7 +77,7 @@ const InvestmentMade: React.FC<{ investment: Investment }> = ({
   return (
     <div className="border-4 border-white text-white p-4 rounded-xl mt-2 m-2 shadow-md blue-glassmorphism flex flex-col justify-between items-start mb-4">
       <h2 className="text-xl font-bold mb-2">{investment.name}</h2>
-      <p className="text-white mb-2">{investment.description}</p>
+      {/* <p className="text-white mb-2">{investment.description}</p> */}
       <div className="flex flex-col gap-1 mb-4">
         <div>
           <strong>Coverage:</strong> {investment.coverage}

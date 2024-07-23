@@ -1,6 +1,6 @@
-import React from "react";
-import { FaHome, FaCar, FaHeartbeat } from "react-icons/fa";
-import { BsSuitcaseLgFill } from "react-icons/bs";
+import React from "react"
+import { FaHome, FaCar, FaHeartbeat } from "react-icons/fa"
+import { BsSuitcaseLgFill } from "react-icons/bs"
 const Home: React.FC = () => {
   return (
     <div className="bg-home h-screen w-full bg-slate-200">
@@ -78,7 +78,7 @@ const Home: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

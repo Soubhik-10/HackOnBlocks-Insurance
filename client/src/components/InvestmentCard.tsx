@@ -86,9 +86,9 @@ const InvestmentCard: React.FC<{ investment: Investment }> = ({
       <h2 className="text-xl font-bold mb-2 text-center sm:text-left">
         {investment.name}
       </h2>
-      <p className="text-white mb-2 text-center sm:text-left">
+      {/* <p className="text-white mb-2 text-center sm:text-left">
         {investment.description}
-      </p>
+      </p> */}
       <div className="flex flex-col gap-1 mb-4">
         <div>
           <strong>Coverage:</strong> {investment.coverage}

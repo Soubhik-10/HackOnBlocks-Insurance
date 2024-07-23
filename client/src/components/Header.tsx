@@ -21,8 +21,8 @@ const Header: React.FC = () => {
           </Link>
         </div>
         <div className="lg:hidden flex items-center ml-4">
-          <button onClick={toggleMenu} className="text-xl text-black">
-            {isOpen ? <FaTimes /> : <FaBars />}
+          <button onClick={toggleMenu} className="text-xl text-white">
+            {isOpen ? <FaTimes color="white" /> : <FaBars color="white" />}
           </button>
           <div className="ml-2">
             <ConnectButton
