@@ -21,7 +21,8 @@ const App: React.FC = () => {
   }, [])
 
   const openMetaMask = () => {
-    const metaMaskLink = "https://metamask.app.link/dapp/YOUR_DAPP_URL"
+    const metaMaskLink = "https://metamask.app.link/dapp/cryptocover.vercel.app"
+
     window.location.href = metaMaskLink
   }
 
