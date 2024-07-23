@@ -78,26 +78,26 @@ const InvestmentMade: React.FC<{ investment: Investment }> = ({
           <strong>Type:</strong> {investment.insurance_type}
         </div>
         <div>
-          <strong>Min Deposit:</strong> ${investment.min_deposition_amount}
+          <strong>Min Deposit:</strong> {investment.min_deposition_amount} ETH
         </div>
         <div>
-          <strong>Monthly Deposit:</strong> $
-          {investment.deposit_amount_monthwise}
+          <strong>Monthly Deposit:</strong>{" "}
+          {investment.deposit_amount_monthwise} ETH
         </div>
         <div>
           <strong>Duration:</strong> {investment.duration} months
         </div>
         <div>
-          <strong>Total Amount:</strong> ${investment.totalamount}
+          <strong>Total Amount:</strong> {investment.totalamount} ETH
         </div>
         <div>
           <strong>Investors:</strong> {investment.no_of_investors}
         </div>
         <div>
-          <strong>Safe Fees:</strong> ${investment.safe_fees}
+          <strong>Safe Fees:</strong> {investment.safe_fees} ETH
         </div>
       </div>
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-wrap gap-4 mb-4">
         <input
           type="text"
           value={ethAmount}

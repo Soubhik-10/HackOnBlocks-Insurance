@@ -50,7 +50,6 @@ const InsuranceList: React.FC<InsuranceListProps> = ({ category }) => {
         "function getAllInsurances() view returns ((uint256 pid, address creator, string name, string description, string coverage, uint256 min_deposition_amount, uint256 deposit_amount_monthwise, uint256 duration, uint256 totalamount, uint256 no_of_investors, string insurance_type, uint256 safe_fees, address[] inverstorPid)[])",
       params: [],
     })
-    console.log(data)
     const formattedPolicies = data.map((item) => ({
       id: Number(item.pid),
       name: item.name,

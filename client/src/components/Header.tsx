@@ -13,30 +13,34 @@ const Header: React.FC = () => {
   const toggleMenu = () => setIsOpen(!isOpen)
 
   return (
-    <div className="p-2 flex flex-col lg:flex-row justify-start sticky top-0 z-10 h-20 mt-1">
+    <div className="p-2 flex flex-col lg:flex-row justify-start items-center sticky top-0 z-10 h-18 mt-0 ">
       <div className="flex items-center w-full lg:w-auto">
         <div className="flex justify-center items-center bg-white rounded-full w-14 h-14">
           <Link to="/">
             <img src={logo} alt="logo" className="rounded-full" />
           </Link>
         </div>
-        <div className="lg:hidden ml-4">
+        <div className="lg:hidden flex items-center ml-4">
           <button onClick={toggleMenu} className="text-xl text-black">
             {isOpen ? <FaTimes /> : <FaBars />}
           </button>
+          <div className="ml-2">
+            <ConnectButton
+              client={client}
+              wallets={wallets}
+              theme={"light"}
+              connectButton={{ label: "Connect" }}
+              connectModal={{ size: "compact" }}
+            />
+          </div>
         </div>
       </div>
       <div
         className={`${
-          isOpen ? "flex max-w-48 blue-glassmorphism text-white" : "hidden"
-        } lg:flex lg:flex-row flex-col w-full lg:w-auto gap-4 lg:gap-6 items-center bg-white p-2 
-        border-2 shadow-md border-teal-500 mt-4 lg:mt-0 md:rounded-3xl`}
+          isOpen ? "flex" : "hidden"
+        } lg:flex lg:flex-row flex-col w-full lg:w-auto gap-4 lg:gap-6 items-center bg-white p-2 border-2 shadow-md border-teal-500 mt-4 lg:mt-0 rounded-3xl`}
       >
-        <nav
-          className={`flex flex-col lg:flex-row gap-4 lg:gap-6 items-center ${
-            isOpen ? " text-white" : ""
-          }  text-black`}
-        >
+        <nav className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-center text-black">
           <Link
             to="/"
             className="text-lg font-semibold hover:bg-teal-300 hover:text-black rounded-full p-2"
@@ -68,15 +72,15 @@ const Header: React.FC = () => {
             Create
           </Link>
         </nav>
-      </div>
-      <div className="rounded-xl border-teal-500 h-auto ">
-        <ConnectButton
-          client={client}
-          wallets={wallets}
-          theme={"light"}
-          connectButton={{ label: "Connect" }}
-          connectModal={{ size: "compact" }}
-        />
+        <div className="hidden lg:flex lg:ml-4">
+          <ConnectButton
+            client={client}
+            wallets={wallets}
+            theme={"light"}
+            connectButton={{ label: "Connect" }}
+            connectModal={{ size: "compact" }}
+          />
+        </div>
       </div>
     </div>
   )

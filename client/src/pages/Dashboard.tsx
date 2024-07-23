@@ -148,7 +148,11 @@ const Dashboard = () => {
       }
     }
   }
-
+  useEffect(() => {
+    setTimeout(() => {
+      if (!registered) handleNotRegistered()
+    }, 10000)
+  }, [registered])
   useEffect(() => {
     if (loading) return // Do nothing while loading
 
@@ -173,45 +177,55 @@ const Dashboard = () => {
 
   return (
     <div className="h-screen bg-po">
-      <div className="flex flex-row justify-between">
+      <div className="sticky top-0 z-10 flex flex-row justify-between items-center">
         <Header />
-        <div className=" justify-between p-4  rounded-bl-3xl">
-          <div className="flex justify-end">
-            <button
-              className={`flex items-center px-4 py-2 mr-2 border-2 border-black ${
-                isUser ? "bg-teal-500" : "bg-teal-100 text-black"
-              } rounded-xl hover:bg-teal-600`}
-              onClick={toggleRole}
-            >
-              <FaUser className="mr-2" />
-              User
-            </button>
-            <button
-              className={`flex items-center px-4 py-2 border-2 border-black ${
-                !isUser ? "bg-teal-500" : "bg-teal-100 text-black"
-              } rounded-xl hover:bg-teal-600`}
-              onClick={toggleRole}
-            >
-              <FaCrown className="mr-2" />
-              Creator
-            </button>
+        <div className="lg:flex hidden justify-end items-center space-x-2">
+          <button
+            className={`flex items-center px-4 py-2 border-2 border-black ${
+              isUser ? "bg-teal-500" : "bg-teal-100 text-black"
+            } rounded-xl hover:bg-teal-600`}
+            onClick={toggleRole}
+          >
+            <FaUser className="mr-2" />
+            User
+          </button>
+          <button
+            className={`flex items-center px-4 py-2 border-2 border-black ${
+              !isUser ? "bg-teal-500" : "bg-teal-100 text-black"
+            } rounded-xl hover:bg-teal-600`}
+            onClick={toggleRole}
+          >
+            <FaCrown className="mr-2" />
+            Creator
+          </button>
+        </div>
+      </div>
+      <div className="flex flex-col h-[calc(100vh-80px)] overflow-y-auto">
+        <div className="flex-1 flex justify-center items-start p-4">
+          <div className="flex flex-wrap justify-center gap-4">
+            {isUser
+              ? userInvestments.map((investment) => (
+                  <InvestmentCard
+                    key={investment.pid}
+                    investment={investment}
+                  />
+                ))
+              : creatorInvestments.map((investment) => (
+                  <InvestmentMade
+                    key={investment.pid}
+                    investment={investment}
+                  />
+                ))}
           </div>
         </div>
       </div>
-      <div className="flex-1 flex justify-center items-center p-4 overflow-x-auto">
-        {isUser ? (
-          <div className="flex gap-4">
-            {userInvestments.map((investment) => (
-              <InvestmentCard key={investment.pid} investment={investment} />
-            ))}
-          </div>
-        ) : (
-          <div className="flex gap-4">
-            {creatorInvestments.map((investment) => (
-              <InvestmentMade key={investment.pid} investment={investment} />
-            ))}
-          </div>
-        )}
+      <div className="fixed bottom-0 right-0 lg:hidden p-4">
+        <button
+          className="flex items-center px-4 py-2 border-2 border-black bg-teal-100 text-black rounded-xl hover:bg-teal-600"
+          onClick={toggleRole}
+        >
+          Toggle Role
+        </button>
       </div>
     </div>
   )
